@@ -1,9 +1,7 @@
+import 'mapbox-gl/dist/mapbox-gl.css';
 import './App.css';
 import { useEffect, useState } from 'react';
 import DataMap from './components/DataMap.js';
-import 'mapbox-gl/dist/mapbox-gl.css';
-
-let callLogsApiCallCount = 0;
 
 function App() {
   const [callLogs, setCallLogs] = useState([]);
@@ -29,8 +27,6 @@ function App() {
       const response = await fetch(`https://data.winnipeg.ca/resource/yg42-q284.json?$where=call_time > '${todaysDateAtMidnight}'&$order=call_time&$limit=5`);
       const data = await response.json();
 
-      callLogsApiCallCount++
-
       setCallLogs(data);
     }
   };
@@ -46,8 +42,6 @@ function App() {
     if (callLogs.length > 0)
       localStorage.setItem('callLogsCache', JSON.stringify(callLogs));
   }, [callLogs]);
-
-  console.log("Call Logs API request count: " + callLogsApiCallCount);
 
   return (
       <DataMap callLogs={callLogs} />

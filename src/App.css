@@ -1,0 +1,16 @@
+.mapboxgl-popup-content {
+    background-color: #fc7d7d;
+    color: #ffffff;
+}
+
+.mapboxgl-popup-content ul {
+    list-style: none;
+}
+
+.mapboxgl-popup-close-button { 
+    color: #ffffff;
+}
+
+.mapboxgl-popup-tip {
+    border-top-color: #fc7d7d !important;
+}
