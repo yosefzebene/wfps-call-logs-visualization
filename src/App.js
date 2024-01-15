@@ -18,13 +18,13 @@ function App() {
       // Update the call logs if there is new data since the last
       const mostRecentDate = cachedCallLogsData[cachedCallLogsData.length-1].call_time;
 
-      const response = await fetch(`https://data.winnipeg.ca/resource/yg42-q284.json?$where=call_time > '${mostRecentDate}'&$order=call_time&$limit=5`);
+      const response = await fetch(`https://data.winnipeg.ca/resource/yg42-q284.json?$where=call_time > '${mostRecentDate}'&$order=call_time&$limit=1000`);
       const data = await response.json();
 
       setCallLogs(cachedCallLogsData.concat(data));
     }
     else {
-      const response = await fetch(`https://data.winnipeg.ca/resource/yg42-q284.json?$where=call_time > '${todaysDateAtMidnight}'&$order=call_time&$limit=5`);
+      const response = await fetch(`https://data.winnipeg.ca/resource/yg42-q284.json?$where=call_time > '${todaysDateAtMidnight}'&$order=call_time&$limit=1000`);
       const data = await response.json();
 
       setCallLogs(data);

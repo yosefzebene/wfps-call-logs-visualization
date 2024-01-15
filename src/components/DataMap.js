@@ -4,7 +4,6 @@ import mapboxgl from 'mapbox-gl';
 import { useState } from 'react';
 
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_KEY;
-const locationApiCache = new Map();
 const incidentIcons = new Map([
     ["Medical Response", "medical_response"],
     ["Fire Rescue - Alarm", "fire_rescue_alarm"],
@@ -13,6 +12,8 @@ const incidentIcons = new Map([
     ["Fire Rescue - Hazmat", "hazmat"]
 ]);
 
+let locationAPICallCount = 0;
+
 const DataMap = ({callLogs}) => {
     const [geojson, setGeojson] = useState({
         type:'FeatureCollection',
@@ -20,23 +21,36 @@ const DataMap = ({callLogs}) => {
     });
 
     useEffect(() => {
-        const getCallLocationByNeighbourhood = async (neighbourhood) => {
-            if(!locationApiCache.has(neighbourhood)) {
-                const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${neighbourhood}.json?proximity=-97.138451,49.895077&access_token=${MAPBOX_TOKEN}`);
-                const data = await response.json();
+        // Gets a random location inside of the Neighborhood bounding box.
+        const getRandomLocationFromBoundingBox = (boundingBox) => {
+            const minLon = boundingBox[0], minLat = boundingBox[1];
+            const maxLon = boundingBox[2], maxLat = boundingBox[3];
 
-                locationApiCache.set(neighbourhood, data.features[0].center);
+            const randomLon = Math.random() * (maxLon - minLon) + minLon;
+            const randomLat = Math.random() * (maxLat - minLat) + minLat;
+
+            return [randomLon, randomLat];
+        }
+
+        const getCallLocationByNeighbourhood = async (neighbourhood) => {
+            if(!localStorage.getItem(neighbourhood)) {
+                const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${neighbourhood}.json?proximity=-97.138451,49.895077&types=neighborhood&access_token=${MAPBOX_TOKEN}`);
+                const data = await response.json();
+                locationAPICallCount++;
+
+                localStorage.setItem(neighbourhood, JSON.stringify(data.features[0].bbox))
             }
 
-            return locationApiCache.get(neighbourhood);
+            return JSON.parse(localStorage.getItem(neighbourhood));
         }
 
         const onCallLogsUpdate = async () => {
             const features = [...geojson.features];
 
             for (const callLog of callLogs.slice(geojson.features.length)) {
-                const location = await getCallLocationByNeighbourhood(callLog.neighbourhood);
                 const icon = callLog.motor_vehicle_incident === 'YES' ? 'car_crash' : incidentIcons.get(callLog.incident_type);
+                const neighborhoodBoundingBox = await getCallLocationByNeighbourhood(callLog.neighbourhood);
+                const randomLocationInTheNeighborhood = getRandomLocationFromBoundingBox(neighborhoodBoundingBox);
 
                 const dateOptions = {
                     year: 'numeric',
@@ -48,15 +62,15 @@ const DataMap = ({callLogs}) => {
                     hour12: true,
                 };
 
-                // Set the icon property depending on the incident type
                 const feature = {
                     type: "Feature",
                     geometry: {
                         type: "Point",
-                        coordinates: location
+                        coordinates: randomLocationInTheNeighborhood
                     },
                     properties: {
                         description: `<strong>${callLog.incident_type}</strong><ul>
+                        <li>Neighborhood: ${callLog.neighbourhood}</li>
                         <li>Units: ${callLog.units ? callLog.units : 'None'}</li>
                         <li>Call Time: ${new Date(callLog.call_time).toLocaleString('en-US', dateOptions)}</li>
                         <li>Call closed time: ${callLog.closed_time ? new Date(callLog.closed_time).toLocaleString('en-US', dateOptions) : 'Not closed yet'}</li></ul>`,
@@ -88,9 +102,7 @@ const DataMap = ({callLogs}) => {
         }
     }
 
-    console.log("Cache size: " + locationApiCache.size);
-    console.log("Call log count: " + callLogs.length);
-    console.log(geojson);
+    console.log("Location API Call Count: " + locationAPICallCount);
 
     return (
         <ReactMapGl
@@ -119,7 +131,7 @@ const DataMap = ({callLogs}) => {
                     layout={{
                         "icon-image": ['get', 'icon'],
                         "icon-allow-overlap": true,
-                        "icon-size": 1,
+                        "icon-size": 1.5,
                     }}
                 />
             </Source>
