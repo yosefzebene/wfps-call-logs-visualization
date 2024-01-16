@@ -109,8 +109,7 @@ const DataMap = ({callLogs}) => {
             initialViewState={{
                 longitude: -97.138451,
                 latitude: 49.895077,
-                zoom: 10,
-                pitch: 30
+                zoom: 9
             }}
             mapStyle="mapbox://styles/yosefz/clqxzkl9c00pv01pif0z27cm8"
             style={{ height: '100vh', width: '100vw' }}
@@ -124,14 +123,36 @@ const DataMap = ({callLogs}) => {
                 id="callLogs"
                 type="geojson"
                 data={geojson}
+                cluster={true}
+                clusterMaxZoom={12}
+                clusterRadius={40}
             >
+                <Layer
+                    id="clusters"
+                    type="circle"
+                    filter={['has', 'point_count']}
+                    paint={{
+                        'circle-color': ['step', ['get', 'point_count'], '#91d3ff', 3, '#c491ff', 5, '#ff9191'],
+                        'circle-radius': ['step', ['get', 'point_count'], 15, 3, 20, 10, 30]
+                    }}
+                />
+                <Layer
+                    id="cluster-count"
+                    type="symbol"
+                    layout={{
+                        'text-field': ['get', 'point_count_abbreviated'],
+                        'text-font': ['DIN Pro Medium', 'Arial Unicode MS Bold'],
+                        'text-size': 14
+                    }}
+                />
                 <Layer
                     id="unclustered-point"
                     type="symbol"
+                    filter={['!', ['has', 'point_count']]}
                     layout={{
                         "icon-image": ['get', 'icon'],
                         "icon-allow-overlap": true,
-                        "icon-size": 1.5,
+                        "icon-size": ['step', ["zoom"], 1.5, 12, 2, 15, 3],
                     }}
                 />
             </Source>
