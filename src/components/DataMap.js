@@ -152,7 +152,7 @@ const DataMap = ({callLogs}) => {
                     layout={{
                         "icon-image": ['get', 'icon'],
                         "icon-allow-overlap": true,
-                        "icon-size": ['step', ["zoom"], 1.5, 12, 2, 15, 3],
+                        "icon-size": ['step', ["zoom"], 0.3, 12, 0.4, 14, 0.6, 15, 1],
                     }}
                 />
             </Source>
