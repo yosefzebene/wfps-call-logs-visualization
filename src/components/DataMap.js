@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactMapGl, { FullscreenControl, Source, Layer } from 'react-map-gl';
 import mapboxgl from 'mapbox-gl';
-import { useState } from 'react';
+import Filter from './Filter';
 
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_KEY;
 const incidentIcons = new Map([
@@ -16,6 +16,11 @@ let locationAPICallCount = 0;
 
 const DataMap = ({callLogs}) => {
     const [geojson, setGeojson] = useState({
+        type:'FeatureCollection',
+        features: []
+    });
+
+    const [filteredGeoJson, setFilteredGeoJson] = useState({
         type:'FeatureCollection',
         features: []
     });
@@ -74,6 +79,8 @@ const DataMap = ({callLogs}) => {
                         <li>Units: ${callLog.units ? callLog.units : 'None'}</li>
                         <li>Call Time: ${new Date(callLog.call_time).toLocaleString('en-US', dateOptions)}</li>
                         <li>Call closed time: ${callLog.closed_time ? new Date(callLog.closed_time).toLocaleString('en-US', dateOptions) : 'Not closed yet'}</li></ul>`,
+                        incident_type: callLog.incident_type,
+                        vehicle_incident: callLog.motor_vehicle_incident,
                         icon: icon
                     }
                 }
@@ -122,7 +129,7 @@ const DataMap = ({callLogs}) => {
             <Source
                 id="callLogs"
                 type="geojson"
-                data={geojson}
+                data={filteredGeoJson}
                 cluster={true}
                 clusterMaxZoom={12}
                 clusterRadius={40}
@@ -157,6 +164,7 @@ const DataMap = ({callLogs}) => {
                 />
             </Source>
             <FullscreenControl position={"top-left"} />
+            <Filter originalGeoJson={geojson} setFilteredGeoJson={setFilteredGeoJson}/>
         </ReactMapGl>
     );
 };

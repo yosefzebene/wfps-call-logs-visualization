@@ -14,3 +14,55 @@
 .mapboxgl-popup-tip {
     border-top-color: #fc7d7d !important;
 }
+
+.show-filter-button {
+    position: absolute;
+    top: 50px;
+    left: 5px;
+    border: 2px solid #222222;
+    border-radius: 10px;
+    background-color: #fc7d7d;
+    color: #ffffff;
+    margin-top: 10px;
+    margin-right: 10px;
+    padding: 5px;
+}
+
+.show-filter-button:hover {
+    background-color: #fe8c8c;
+    transition: 300ms;
+}
+
+.filter-box {
+    position: absolute;
+    top: 100px;
+    left: 5px;
+    background-color: #fc7d7d;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.filter-box select {
+    appearance: none;
+    background-color: #161616;
+    color: #ffffff;
+    padding: 5px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.filter-box button {
+    border: 2px solid #222222;
+    border-radius: 10px;
+    background-color: #161616;
+    color: #ffffff;
+    margin-top: 10px;
+    margin-right: 10px;
+    padding: 5px;
+}
+
+.filter-box button:hover {
+    background-color: #2f2f2f;
+    cursor: pointer;
+    transition: 300ms;
+}
