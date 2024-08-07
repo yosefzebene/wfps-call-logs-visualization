@@ -4,6 +4,9 @@ import mapboxgl from 'mapbox-gl';
 import Filter from './Filter';
 
 const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_KEY;
+const WINNIPEG_LONGITUDE = -97.138451;
+const WINNIPEG_LATITUDE = 49.895077;
+
 const incidentIcons = new Map([
     ["Medical Response", "medical_response"],
     ["Fire Rescue - Alarm", "fire_rescue_alarm"],
@@ -39,11 +42,12 @@ const DataMap = ({callLogs}) => {
 
         const getCallLocationByNeighbourhood = async (neighbourhood) => {
             if(!localStorage.getItem(neighbourhood)) {
-                const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${neighbourhood}.json?proximity=-97.138451,49.895077&types=neighborhood&access_token=${MAPBOX_TOKEN}`);
+                const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${neighbourhood}.json?proximity=${WINNIPEG_LONGITUDE},${WINNIPEG_LATITUDE}&types=neighborhood&access_token=${MAPBOX_TOKEN}`);
                 const data = await response.json();
                 locationAPICallCount++;
 
-                localStorage.setItem(neighbourhood, JSON.stringify(data.features[0].bbox))
+                if (data.features[0])
+                    localStorage.setItem(neighbourhood, JSON.stringify(data.features[0].bbox));
             }
 
             return JSON.parse(localStorage.getItem(neighbourhood));
@@ -55,7 +59,8 @@ const DataMap = ({callLogs}) => {
             for (const callLog of callLogs.slice(geojson.features.length)) {
                 const icon = callLog.motor_vehicle_incident === 'YES' ? 'car_crash' : incidentIcons.get(callLog.incident_type);
                 const neighborhoodBoundingBox = await getCallLocationByNeighbourhood(callLog.neighbourhood);
-                const randomLocationInTheNeighborhood = getRandomLocationFromBoundingBox(neighborhoodBoundingBox);
+                const randomLocationInTheNeighborhood = neighborhoodBoundingBox ? 
+                    getRandomLocationFromBoundingBox(neighborhoodBoundingBox) : [WINNIPEG_LONGITUDE, WINNIPEG_LATITUDE];
 
                 const dateOptions = {
                     year: 'numeric',
@@ -114,8 +119,8 @@ const DataMap = ({callLogs}) => {
     return (
         <ReactMapGl
             initialViewState={{
-                longitude: -97.138451,
-                latitude: 49.895077,
+                longitude: WINNIPEG_LONGITUDE,
+                latitude: WINNIPEG_LATITUDE,
                 zoom: 9
             }}
             mapStyle="mapbox://styles/yosefz/clqxzkl9c00pv01pif0z27cm8"
